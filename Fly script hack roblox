@@ -1,0 +1,163 @@
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local flying = false
+local speed = 50 -- Tốc độ bay ban đầu
+local maxSpeed = 200
+local guiBay, guiTangToc, guiSuperFixLag
+local bodyVelocity
+
+-- Function to create GUI
+local function createGUI()
+    -- GUI cho nút Bay
+    guiBay = Instance.new("ScreenGui")
+    guiBay.Name = "BayGui"
+    guiBay.Parent = player:WaitForChild("PlayerGui")
+
+    -- Nút Bay
+    local bayButton = Instance.new("TextButton", guiBay)
+    bayButton.Size = UDim2.new(0, 100, 0, 50)
+    bayButton.Position = UDim2.new(0, 10, 0, 10)
+    bayButton.Text = "Bay"
+    bayButton.Draggable = true
+
+    -- GUI cho nút Tăng Tốc
+    guiTangToc = Instance.new("ScreenGui")
+    guiTangToc.Name = "TangTocGui"
+    guiTangToc.Parent = player:WaitForChild("PlayerGui")
+
+    -- Nút Tăng Tốc
+    local tangTocButton = Instance.new("TextButton", guiTangToc)
+    tangTocButton.Size = UDim2.new(0, 100, 0, 50)
+    tangTocButton.Position = UDim2.new(0, 10, 0, 70)
+    tangTocButton.Text = "Tăng Tốc"
+    tangTocButton.Draggable = true
+
+    -- GUI cho nút Super Fix Lag
+    guiSuperFixLag = Instance.new("ScreenGui")
+    guiSuperFixLag.Name = "SuperFixLagGui"
+    guiSuperFixLag.Parent = player:WaitForChild("PlayerGui")
+
+    -- Nút Super Fix Lag
+    local superFixLagButton = Instance.new("TextButton", guiSuperFixLag)
+    superFixLagButton.Size = UDim2.new(0, 100, 0, 50)
+    superFixLagButton.Position = UDim2.new(0, 10, 0, 130)
+    superFixLagButton.Text = "Super Fix Lag"
+    superFixLagButton.Draggable = true
+
+    -- Chức năng của nút Bay
+    bayButton.MouseButton1Click:Connect(function()
+        if not flying then
+            -- Bắt đầu bay
+            flying = true
+            humanoid.PlatformStand = true
+            bodyVelocity = Instance.new("BodyVelocity")
+            bodyVelocity.MaxForce = Vector3.new(100000, 100000, 100000)
+            bodyVelocity.Parent = character:WaitForChild("HumanoidRootPart")
+
+            -- Điều khiển bay
+            game:GetService("RunService").RenderStepped:Connect(function()
+                if flying then
+                    local direction = Vector3.new(0, 0, 0)
+                    local userInputService = game:GetService("UserInputService")
+
+                    -- Điều khiển WASD khi bay
+                    if userInputService:IsKeyDown(Enum.KeyCode.W) then
+                        direction = direction + character.PrimaryPart.CFrame.LookVector
+                    end
+                    if userInputService:IsKeyDown(Enum.KeyCode.S) then
+                        direction = direction - character.PrimaryPart.CFrame.LookVector
+                    end
+                    if userInputService:IsKeyDown(Enum.KeyCode.A) then
+                        direction = direction - character.PrimaryPart.CFrame.RightVector
+                    end
+                    if userInputService:IsKeyDown(Enum.KeyCode.D) then
+                        direction = direction + character.PrimaryPart.CFrame.RightVector
+                    end
+
+                    -- Đặt vận tốc dựa trên hướng và tốc độ
+                    bodyVelocity.Velocity = direction * speed
+                end
+            end)
+        else
+            -- Dừng bay
+            flying = false
+            humanoid.PlatformStand = false
+            speed = 50 -- Reset tốc độ khi ngừng bay
+            if bodyVelocity then
+                bodyVelocity:Destroy()
+            end
+        end
+    end)
+
+    -- Chức năng của nút Tăng Tốc
+    tangTocButton.MouseButton1Click:Connect(function()
+        if flying then
+            if speed < maxSpeed then
+                speed = speed + 10
+                print("Tốc độ hiện tại: " .. speed .. " km/h")
+            else
+                print("Đã đạt tốc độ tối đa!")
+            end
+        else
+            print("Không thể tăng tốc nếu chưa bay!")
+        end
+    end)
+
+    -- Chức năng của nút Super Fix Lag
+    superFixLagButton.MouseButton1Click:Connect(function()
+        -- Giảm thiết lập ánh sáng
+        local lighting = game:GetService("Lighting")
+        lighting.GlobalShadows = false
+        lighting.FogEnd = 100 -- Giảm khoảng cách nhìn để cải thiện hiệu suất
+        lighting.Brightness = 1
+        lighting.OutdoorAmbient = Color3.fromRGB(127, 127, 127)
+
+        -- Giảm chất lượng đồ họa cho các phần tử trong game
+        for _, part in pairs(workspace:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.Material = Enum.Material.SmoothPlastic -- Chuyển vật liệu để giảm chất lượng đồ họa
+                part.CastShadow = false
+            elseif part:IsA("ParticleEmitter") or part:IsA("Trail") then
+                part.Enabled = false -- Tắt hiệu ứng để giảm lag
+            end
+        end
+
+        -- Giảm chi tiết và chất lượng của nước
+        if workspace:FindFirstChild("Terrain") then
+            local terrain = workspace.Terrain
+            terrain.WaterWaveSize = 0
+            terrain.WaterWaveSpeed = 0
+            terrain.WaterReflectance = 0
+            terrain.WaterTransparency = 1
+        end
+
+        print("Đã kích hoạt Super Fix Lag: Đồ họa và hiệu ứng đã được giảm.")
+    end)
+end
+
+-- Hàm để xử lý lỗi
+local function safeExecute(func)
+    local success, err = pcall(func)
+    if not success then
+        warn("Lỗi xảy ra: " .. err)
+    end
+end
+
+-- Thực thi chính
+safeExecute(function()
+    createGUI()
+    -- Kết nối để dừng bay khi nhấn phím E
+    game:GetService("UserInputService").InputBegan:Connect(function(input)
+        if input.KeyCode == Enum.KeyCode.E then
+            if flying then
+                flying = false
+                humanoid.PlatformStand = false
+                if bodyVelocity then
+                    bodyVelocity:Destroy()
+                end
+                print("Dừng bay.")
+            end
+        end
+    end)
+end)
