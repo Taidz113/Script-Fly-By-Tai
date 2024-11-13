@@ -5,7 +5,7 @@ local flying = false
 local speed = 50 -- Tốc độ bay ban đầu
 local maxSpeed = 200
 local guiBay, guiTangToc, guiSuperFixLag
-local bodyVelocity
+local bodyVelocity, bodyGyro
 
 -- Function to create GUI
 local function createGUI()
@@ -51,9 +51,14 @@ local function createGUI()
             -- Bắt đầu bay
             flying = true
             humanoid.PlatformStand = true
+
             bodyVelocity = Instance.new("BodyVelocity")
             bodyVelocity.MaxForce = Vector3.new(100000, 100000, 100000)
             bodyVelocity.Parent = character:WaitForChild("HumanoidRootPart")
+
+            bodyGyro = Instance.new("BodyGyro")
+            bodyGyro.MaxTorque = Vector3.new(100000, 100000, 100000)
+            bodyGyro.Parent = character:WaitForChild("HumanoidRootPart")
 
             -- Điều khiển bay
             game:GetService("RunService").RenderStepped:Connect(function()
@@ -77,6 +82,7 @@ local function createGUI()
 
                     -- Đặt vận tốc dựa trên hướng và tốc độ
                     bodyVelocity.Velocity = direction * speed
+                    bodyGyro.CFrame = character.PrimaryPart.CFrame
                 end
             end)
         else
@@ -86,6 +92,9 @@ local function createGUI()
             speed = 50 -- Reset tốc độ khi ngừng bay
             if bodyVelocity then
                 bodyVelocity:Destroy()
+            end
+            if bodyGyro then
+                bodyGyro:Destroy()
             end
         end
     end)
@@ -155,6 +164,9 @@ safeExecute(function()
                 humanoid.PlatformStand = false
                 if bodyVelocity then
                     bodyVelocity:Destroy()
+                end
+                if bodyGyro then
+                    bodyGyro:Destroy()
                 end
                 print("Dừng bay.")
             end
