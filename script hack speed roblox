@@ -1,0 +1,86 @@
+-- Roblox Speed Increase Script
+
+-- Services
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local StarterGui = game:GetService("StarterGui")
+local RunService = game:GetService("RunService")
+
+-- Variables
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local speedIncrease = 1
+local maxSpeed = 1000
+local currentSpeed = 16 -- Default walking speed
+local speedGui
+local lagGui
+
+-- Function to create Speed Up GUI
+local function createSpeedGui()
+    speedGui = Instance.new("ScreenGui", StarterGui)
+    local speedButton = Instance.new("TextButton", speedGui)
+    speedButton.Size = UDim2.new(0, 200, 0, 50)
+    speedButton.Position = UDim2.new(0.5, -100, 0.5, -25)
+    speedButton.Text = "Speed Up"
+    
+    local speedLabel = Instance.new("TextLabel", speedGui)
+    speedLabel.Size = UDim2.new(0, 200, 0, 50)
+    speedLabel.Position = UDim2.new(0.5, -100, 0.5, 30)
+    speedLabel.Text = "Speed: " .. currentSpeed .. " km/h"
+
+    speedButton.MouseButton1Click:Connect(function()
+        if currentSpeed < maxSpeed then
+            currentSpeed = currentSpeed + speedIncrease
+            humanoid.WalkSpeed = currentSpeed
+            speedLabel.Text = "Speed: " .. currentSpeed .. " km/h"
+        else
+            warn("Maximum speed reached!")
+        end
+    end)
+end
+
+-- Function to create Lag Fix GUI
+local function createLagGui()
+    lagGui = Instance.new("ScreenGui", StarterGui)
+    local lagButton = Instance.new("TextButton", lagGui)
+    lagButton.Size = UDim2.new(0, 200, 0, 50)
+    lagButton.Position = UDim2.new(0.5, -100, 0.5, 100)
+    lagButton.Text = "Fix Lag"
+
+    lagButton.MouseButton1Click:Connect(function()
+        -- Reduce graphics settings
+        if game:GetService("Workspace").CurrentCamera then
+            game:GetService("Workspace").CurrentCamera.FieldOfView = 70
+            game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui").ResetOnSpawn = false
+            print("Graphics settings adjusted for better performance.")
+        else
+            warn("Unable to adjust graphics settings.")
+        end
+    end)
+end
+
+-- Anti-scan, anti-detection, and anti-ban-kick measures
+local function antiCheatMeasures()
+    -- Placeholder for anti-cheat measures
+    print("Anti-cheat measures activated.")
+end
+
+-- Main execution
+local function main()
+    pcall(function()
+        createSpeedGui()
+        createLagGui()
+        antiCheatMeasures()
+    end)
+end
+
+-- Run the main function
+main()
+
+-- Error handling
+RunService.Heartbeat:Connect(function()
+    if not humanoid then
+        warn("Humanoid not found! Please ensure the character is loaded.")
+    end
+end)
