@@ -1,4 +1,4 @@
--- Roblox Speed Increase Script
+-- Roblox Speed Adjustment Script with Plus/Minus Buttons
 
 -- Services
 local Players = game:GetService("Players")
@@ -9,39 +9,66 @@ local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local humanoid = character:WaitForChild("Humanoid")
-local speedIncrease = 1
+local speedIncrease = 10 -- Speed increment each time "+" is clicked
 local maxSpeed = 1000
-local currentSpeed = 16 -- Default walking speed
+local minSpeed = 0
+local currentSpeed = 16 -- Default walking speed, adjustable
 local speedGui
 local lagGui
 
--- Function to create Speed Up GUI
+-- Function to create Speed Adjustment GUI
 local function createSpeedGui()
     speedGui = Instance.new("ScreenGui")
     speedGui.Name = "SpeedGui"
     speedGui.Parent = player:WaitForChild("PlayerGui")
 
-    local speedButton = Instance.new("TextButton", speedGui)
-    speedButton.Size = UDim2.new(0, 200, 0, 50)
-    speedButton.Position = UDim2.new(0.5, -100, 0.5, -25)
-    speedButton.Text = "Speed Up"
-    speedButton.Draggable = true -- Make the button draggable
-    speedButton.Active = true -- Required for draggable GUI elements
-
+    -- Speed display label
     local speedLabel = Instance.new("TextLabel", speedGui)
     speedLabel.Size = UDim2.new(0, 200, 0, 50)
-    speedLabel.Position = UDim2.new(0.5, -100, 0.5, 30)
+    speedLabel.Position = UDim2.new(0.5, -100, 0.5, -25)
     speedLabel.Text = "Speed: " .. currentSpeed .. " km/h"
+    speedLabel.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    speedLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     speedLabel.Draggable = true -- Make the label draggable
     speedLabel.Active = true -- Required for draggable GUI elements
 
-    speedButton.MouseButton1Click:Connect(function()
+    -- Plus button
+    local plusButton = Instance.new("TextButton", speedGui)
+    plusButton.Size = UDim2.new(0, 50, 0, 50)
+    plusButton.Position = UDim2.new(0.5, 60, 0.5, -25)
+    plusButton.Text = "+"
+    plusButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+    plusButton.Draggable = true
+    plusButton.Active = true
+
+    -- Minus button
+    local minusButton = Instance.new("TextButton", speedGui)
+    minusButton.Size = UDim2.new(0, 50, 0, 50)
+    minusButton.Position = UDim2.new(0.5, -110, 0.5, -25)
+    minusButton.Text = "−"
+    minusButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    minusButton.Draggable = true
+    minusButton.Active = true
+
+    -- Increase speed on "+" button click
+    plusButton.MouseButton1Click:Connect(function()
         if currentSpeed < maxSpeed then
             currentSpeed = currentSpeed + speedIncrease
             humanoid.WalkSpeed = currentSpeed
             speedLabel.Text = "Speed: " .. currentSpeed .. " km/h"
         else
             warn("Maximum speed reached!")
+        end
+    end)
+
+    -- Decrease speed on "−" button click
+    minusButton.MouseButton1Click:Connect(function()
+        if currentSpeed > minSpeed then
+            currentSpeed = currentSpeed - speedIncrease
+            humanoid.WalkSpeed = currentSpeed
+            speedLabel.Text = "Speed: " .. currentSpeed .. " km/h"
+        else
+            warn("Minimum speed reached!")
         end
     end)
 end
@@ -60,20 +87,37 @@ local function createLagGui()
     lagButton.Active = true -- Required for draggable GUI elements
 
     lagButton.MouseButton1Click:Connect(function()
-        -- Reduce graphics settings
-        if game:GetService("Workspace").CurrentCamera then
-            game:GetService("Workspace").CurrentCamera.FieldOfView = 70
-            player:WaitForChild("PlayerGui").ResetOnSpawn = false
-            print("Graphics settings adjusted for better performance.")
-        else
-            warn("Unable to adjust graphics settings.")
+        -- Improve performance by adjusting graphics settings
+        local lighting = game:GetService("Lighting")
+        lighting.GlobalShadows = false
+        lighting.FogEnd = 100
+        lighting.Brightness = 1
+        lighting.OutdoorAmbient = Color3.fromRGB(127, 127, 127)
+
+        -- Disable unnecessary graphics effects
+        for _, obj in pairs(workspace:GetDescendants()) do
+            if obj:IsA("BasePart") then
+                obj.Material = Enum.Material.SmoothPlastic
+                obj.CastShadow = false
+            elseif obj:IsA("ParticleEmitter") or obj:IsA("Trail") then
+                obj.Enabled = false
+            end
         end
+
+        if workspace:FindFirstChild("Terrain") then
+            local terrain = workspace.Terrain
+            terrain.WaterWaveSize = 0
+            terrain.WaterWaveSpeed = 0
+            terrain.WaterReflectance = 0
+            terrain.WaterTransparency = 1
+        end
+
+        print("Lag reduction activated: Graphics and effects adjusted for better performance.")
     end)
 end
 
--- Anti-scan, anti-detection, and anti-ban-kick measures
+-- Anti-cheat measures (placeholders)
 local function antiCheatMeasures()
-    -- Placeholder for anti-cheat measures
     print("Anti-cheat measures activated.")
 end
 
