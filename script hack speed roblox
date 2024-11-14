@@ -3,7 +3,6 @@
 -- Services
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
-local StarterGui = game:GetService("StarterGui")
 local RunService = game:GetService("RunService")
 
 -- Variables
@@ -18,16 +17,23 @@ local lagGui
 
 -- Function to create Speed Up GUI
 local function createSpeedGui()
-    speedGui = Instance.new("ScreenGui", StarterGui)
+    speedGui = Instance.new("ScreenGui")
+    speedGui.Name = "SpeedGui"
+    speedGui.Parent = player:WaitForChild("PlayerGui")
+
     local speedButton = Instance.new("TextButton", speedGui)
     speedButton.Size = UDim2.new(0, 200, 0, 50)
     speedButton.Position = UDim2.new(0.5, -100, 0.5, -25)
     speedButton.Text = "Speed Up"
-    
+    speedButton.Draggable = true -- Make the button draggable
+    speedButton.Active = true -- Required for draggable GUI elements
+
     local speedLabel = Instance.new("TextLabel", speedGui)
     speedLabel.Size = UDim2.new(0, 200, 0, 50)
     speedLabel.Position = UDim2.new(0.5, -100, 0.5, 30)
     speedLabel.Text = "Speed: " .. currentSpeed .. " km/h"
+    speedLabel.Draggable = true -- Make the label draggable
+    speedLabel.Active = true -- Required for draggable GUI elements
 
     speedButton.MouseButton1Click:Connect(function()
         if currentSpeed < maxSpeed then
@@ -42,17 +48,22 @@ end
 
 -- Function to create Lag Fix GUI
 local function createLagGui()
-    lagGui = Instance.new("ScreenGui", StarterGui)
+    lagGui = Instance.new("ScreenGui")
+    lagGui.Name = "LagGui"
+    lagGui.Parent = player:WaitForChild("PlayerGui")
+
     local lagButton = Instance.new("TextButton", lagGui)
     lagButton.Size = UDim2.new(0, 200, 0, 50)
     lagButton.Position = UDim2.new(0.5, -100, 0.5, 100)
     lagButton.Text = "Fix Lag"
+    lagButton.Draggable = true -- Make the button draggable
+    lagButton.Active = true -- Required for draggable GUI elements
 
     lagButton.MouseButton1Click:Connect(function()
         -- Reduce graphics settings
         if game:GetService("Workspace").CurrentCamera then
             game:GetService("Workspace").CurrentCamera.FieldOfView = 70
-            game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui").ResetOnSpawn = false
+            player:WaitForChild("PlayerGui").ResetOnSpawn = false
             print("Graphics settings adjusted for better performance.")
         else
             warn("Unable to adjust graphics settings.")
